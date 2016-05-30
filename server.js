@@ -74,25 +74,26 @@ app.get('/todos/:id',function(req,res)
 
 app.delete('/delTodos/:id',function(req,res)
 {
-    var findObj;
-    todos.forEach(function(obj)
+    db.todo.destroy(
     {
-        if( obj.id == req.params.id)
-        findObj = obj;
+        where:
+        {
+            id:req.params.id
+        }
+    }).then(function(no){
+        if(no>0)
+        {
+          res.status(204).send("Delete Sucessfully");      
+        }
+        else
+        {
+              res.status(404).send();  
+        }
+        
+    },function(e){
+        
     });
-    
-    if(findObj)
-    {
-        todos.slice(todos.indexOf(findObj),1);  
-        //res.status(200).send();
-        res.json(todos);
-    }
-    else
-    {
-            res.status(404).send();
-    }
-    
-    res.send("Hi");
+  
 });
 
 app.post('/todos',function(req,res)
