@@ -17,7 +17,40 @@ app.get('/',function(req,res)
 });
 
 app.get('/todos',function(req,res){
-    res.json(todos);
+    var query = req.query;
+    var where = {};
+    
+    if(query.hasOwnProperty("completed"))
+    {
+        if(query.completed === 'true')
+        {
+            where.completed = true;
+        }
+        else if(query.completed === 'false')
+        {
+            where.completed = false;
+        }
+    }
+    
+    if(query.hasOwnProperty("q")&& query.q.length>0)
+    {
+        where.description = {
+            $like:"%"+query.q+"%"
+        };
+    }
+    
+    
+    db.todo.findAll(
+    {
+        where:where
+    }).then(function(todos)
+           {
+        res.json(todos);
+    },function(e)
+           {
+        res.status(500).send();
+    });
+    
     
 });
 
@@ -25,16 +58,18 @@ app.get('/todos/:id',function(req,res)
 {
   
    
-    var findObj = _.findWhere(todos,{id:req.params.id});
+    db.todo.findById(req.params.id).then(function(t)
+    {
+         if(!!t)
+        res.json(t.toJSON());
+           else
+               res.status(404).send();
+    },function(e)
+    {
+        res.status(500).send();
+    });
 
-    if(findObj)
-        {
-    res.json(findObj);
-        }
-    else
-        {
-            res.status(404).send();
-        }
+    
 });
 
 app.delete('/delTodos/:id',function(req,res)
